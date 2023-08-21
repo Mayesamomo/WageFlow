@@ -79,6 +79,6 @@ WageFlow is a comprehensive web application that simplifies shift tracking, invo
   - React Router for client-side routing\
   - Axios for making API requests\
   - Redux or Context API for state management\
-  - Material-UI or Ant Design for UI components
+  - Material-UI, TailwindCss or  Ant Design for UI components
 
-This description provides a framework for building the WageFlow application. As you proceed with development, you can customize the features, UI, and functionalities based on your preferences and project needs.
+
