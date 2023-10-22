@@ -21,7 +21,7 @@ WageFlow is a comprehensive web application that simplifies shift tracking, invo
    - Middleware: Passport.js authentication\
    - Controller: Authenticate users and issue JWT tokens for session management.
 
-3\. **Shift Input:**\
+3\. **Shift(invoice items) Input:**\
    - Endpoint: `POST /api/shifts`\
    - Model: `Shift`\
    - Middleware: JWT authentication\
