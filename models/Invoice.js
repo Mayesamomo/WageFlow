@@ -1,20 +1,19 @@
-import e from "express";
 import mongoose from "mongoose";
 import autopopulate from "mongoose-autopopulate";
-import { v4 as uuidv4 } from "uuid/v4";
+// import { v4 as uuidv4 } from 'uuid';
 const { ObjectId } = mongoose.Schema;
 
 mongoose.Promise = global.Promise;
 
 const InvoiceSchema = new mongoose.Schema(
     {
-        InvoiceId: {
-            type: String,
-            required: true,
-            trim: true,
-            unique: true,
-            default: uuidv4(),
-        },
+        // InvoiceId: {
+        //     type: String,
+        //     required: true,
+        //     trim: true,
+        //     unique: true,
+        //     default: uuidv4(),
+        // },
         removed: {
             type: Boolean,
             default: false,
@@ -34,10 +33,6 @@ const InvoiceSchema = new mongoose.Schema(
         },
 
         date: {
-            type: Date,
-            required: true,
-        },
-        dueDate: {
             type: Date,
             required: true,
         },
@@ -83,6 +78,11 @@ const InvoiceSchema = new mongoose.Schema(
                 default: 0,
             },
         }],
+        taxRate: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
         notes: {
             type: String,
             trim: true,

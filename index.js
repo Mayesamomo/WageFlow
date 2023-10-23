@@ -12,6 +12,8 @@ import connectDB from './config/db.js';
 //import routes
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import clientRoutes from './routes/clientRoutes.js';
+import invoiceRoutes from './routes/invoiceRoutes.js';  
 //import middlewares
 import errorHandler from './middleware/error.js';
 //configurations
@@ -34,7 +36,8 @@ app.use(cors());
 //routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-
+app.use('/api/clients', clientRoutes);
+app.use('/api/invoices', invoiceRoutes);
 //error middleware
 app.use(errorHandler);
 

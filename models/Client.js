@@ -8,6 +8,7 @@ const ClientSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        unique: true,
         maxlength: [32, "Company name can not be more than 32 characters"],
     },
     address: {
@@ -31,6 +32,11 @@ const ClientSchema = new mongoose.Schema({
         trim: true,
         unique: true,   
     },
+    invoices: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Invoice",
+        autopopulate: true,
+    }],
 }, {timestamps: true});
 
 const Client = mongoose.model("Client", ClientSchema);
