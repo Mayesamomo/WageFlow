@@ -1,29 +1,29 @@
 import yup from 'yup';
 
-// Create a schema for the invoice form
-const invoiceSchema = yup.object().shape({
-    date: yup.string().required("Date is required"),
-    client: yup.object().shape({
-        _id: yup.string().required('Client ID is required'),
-    }).required('Client is required'),
+const invoiceValidationSchema = yup.object().shape({
+    client: yup.string().required(),
+    date: yup.date().required(),
     items: yup.array().of(
-        yup.object().shape({
-            dateServed: yup.date().required('Date served is required'),
-            day: yup.string().required('Day is required'),
-            location: yup.string().trim(),
-            startTime: yup.string().trim(),
-            endTime: yup.string().trim(),
-            // totalHours: yup.number().required('Total hours is required'),
-            ratePay: yup.number().default(0),
-            serviceType: yup.string().required('Service type is required'),
-            tax: yup.number().default(0),
-        })
+      yup.object().shape({
+        dateServed: yup.date().required(),
+        day: yup.string().required(),
+        location: yup.string().trim(),
+        startTime: yup.string().trim(),
+        endTime: yup.string().trim(),
+        totalHours: yup.number().notRequired(),
+        ratePay: yup.number().default(0),
+        serviceType: yup.string().required().trim(),
+        tax: yup.number().default(0),
+        totalRate: yup.number().required().default(0),
+      })
     ),
+    taxRate: yup.number().required().default(0),
     notes: yup.string().trim(),
-    taxRate: yup.number().default(0),
-    // subTotal: yup.number().required('Subtotal is required'),
-    // totalTax: yup.number().required('Total tax is required'),
-    // totalAmount: yup.number().required('Total amount is required'),
+    subTotal: yup.number().required().default(0),
+    totalTax: yup.number().required().default(0),
+    totalAmount: yup.number().required().default(0),
 });
 
-export default invoiceSchema;
+
+
+export default invoiceValidationSchema;

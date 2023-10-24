@@ -1,19 +1,21 @@
 import mongoose from "mongoose";
 import autopopulate from "mongoose-autopopulate";
-// import { v4 as uuidv4 } from 'uuid';
+import {
+    calculateTotalItemHours,
+    calculateTotalItemRate,
+    calculateItemTax,
+    calculateTotalItemTax,
+    calculateSubtotal,
+    calculateInvoiceTax,
+    calculateTotalInvoiceAmount
+} from "../helper/calculation.js";
 const { ObjectId } = mongoose.Schema;
 
 mongoose.Promise = global.Promise;
 
 const InvoiceSchema = new mongoose.Schema(
     {
-        // InvoiceId: {
-        //     type: String,
-        //     required: true,
-        //     trim: true,
-        //     unique: true,
-        //     default: uuidv4(),
-        // },
+
         removed: {
             type: Boolean,
             default: false,
@@ -40,6 +42,12 @@ const InvoiceSchema = new mongoose.Schema(
             dateServed: {
                 type: Date,
                 required: true,
+                validate: {
+                    validator: function (value) {
+                        return value <= new Date();
+                    },
+                    message: "Date served must be in the past or today",
+                },
             },
             day: {
                 type: String,
@@ -60,12 +68,14 @@ const InvoiceSchema = new mongoose.Schema(
 
             totalHours: {
                 type: Number,
-                required: true,
+                min: 0,
+                // required: true,
             },
             ratePay: {
                 type: Number,
                 required: true,
                 default: 0,
+                min: 0,
             },
             serviceType: {
                 type: String,
@@ -76,12 +86,19 @@ const InvoiceSchema = new mongoose.Schema(
                 type: Number,
                 required: true,
                 default: 0,
+                min: 0,
             },
+            totalRate: {
+                type: Number,
+                required: true,
+                default: 0,
+                min: 0, 
+            }
         }],
         taxRate: {
             type: Number,
-            required: true,
-            default: 0,
+            required: false,
+            min: 0,
         },
         notes: {
             type: String,
@@ -92,19 +109,39 @@ const InvoiceSchema = new mongoose.Schema(
             type: Number,
             required: true,
             default: 0,
+            min: 0,
         },
         totalTax: {
             type: Number,
             required: true,
             default: 0,
+            min: 0,
         },
         totalAmount: {
             type: Number,
             required: true,
             default: 0,
+            min: 0,
         }
     },
     { timestamps: true });
+
+
+    //@desc: pre-save middleware to calculate total rate, tax, subtotal, total tax, and total amount
+    //@param next: middleware callback function
+    //@return: none
+
+    InvoiceSchema.pre("save", function (next) {
+        this.items.forEach(item => {
+            item.totalHours  = calculateTotalItemHours(item);
+            item.totalRate = calculateTotalItemRate(item);
+            item.tax = calculateItemTax(item, this.taxRate);
+        });
+        this.subTotal = calculateSubtotal(this.items);
+        this.totalTax = calculateInvoiceTax(this.items, this.taxRate);
+        this.totalAmount = calculateTotalInvoiceAmount(this.subTotal, this.totalTax);
+        next();
+    })
 InvoiceSchema.plugin(autopopulate);
 const Invoice = mongoose.model("Invoice", InvoiceSchema);
 export default Invoice;

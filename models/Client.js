@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+const { ObjectId } = mongoose.Schema;
 const ClientSchema = new mongoose.Schema({
     removed: {
         type: Boolean,
@@ -33,7 +34,7 @@ const ClientSchema = new mongoose.Schema({
         unique: true,   
     },
     invoices: [{
-        type: mongoose.Schema.Types.ObjectId,
+        type:ObjectId,
         ref: "Invoice",
         autopopulate: true,
     }],

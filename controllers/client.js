@@ -40,7 +40,7 @@ async function getClient(req, res) {
     try {
 
         const id = req.params.id;
-        const client = await Client.findById(id);
+        const client = await Client.findById(id).populate("invoices");
         if (!client) {
             return next(new ErrorResponse("client not found", 404));
         }
@@ -219,6 +219,10 @@ async function searchClients(req, res) {
         });
     }
 }
+
+// @desc    Get all client's invoices
+// @route   GET /api/clients/:id/invoices
+// @access  Private
 
 
 

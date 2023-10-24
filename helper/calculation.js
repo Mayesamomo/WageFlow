@@ -1,54 +1,94 @@
-import moment from 'moment';    
-import currency from 'currency.js'; 
+import moment from 'moment';
+import currency from 'currency.js';
 
-//@desc: calculate total hours
+//@desc calculate total hours worked
+//@param items: array of items
+//@return total hours worked
 
-export function calculateTotalHours  (timeIn, timeOut){
-    const timeInMoment = moment(timeIn, 'HH:mm');
-    const timeOutMoment = moment(timeOut, 'HH:mm');
-const duration = moment.duration(timeOutMoment.diff(timeInMoment));
-    const totalHours = duration.asHours();
-    return totalHours;
-};
-
-
-//@desc: calculate total rate 
-export function calculateTotalRate(totalHours, ratePay){
-    const totalRate = currency(ratePay).multiply(totalHours).value;
-    return totalRate;
-};
-
-
-//@desc: calculate total tax
-
-export function calculateTotalTax(totalRate, tax){
-    if(tax < 0 || tax > 100){
-        throw new Error('Tax must be between 0 and 100');
+function calculateTotalItemHours(item) {
+    const startTime = moment(item.startTime, ["h:mm A", "H:mm"],true);
+    const endTime = moment(item.endTime, ["h:mm A", "H:mm"],true);
+   
+    //check if both startTime and endTime are valid
+    if(startTime.isValid() && endTime.isValid()){
+        //check if endTime is before startTime
+        if(endTime.isBefore(startTime)){
+            endTime.add(1,'days');
+        }
+        const duration = moment.duration(endTime.diff(startTime));
+        return duration.asHours();
     }
-    const taxAmount = currency(totalRate).multiply(tax/100).value;
-    return taxAmount;
+    throw new Error('Invalid time format. Please use a valid time format (e.g., "h:mm A" or "H:mm").');
 }
 
-//@desc: calculate subtotal
+//@desc calculate total rate
+//@param items: array of items
+//@return total rate
 
-export function calculateSubTotal(items){
-    //initialize subtotal
-    let subTotal = currency(0);
+function calculateTotalItemRate(item) {
+    const totalHours = item.totalHours;
+    const ratePay = new currency(item.ratePay);
+    return ratePay.multiply(totalHours);
+}
 
-    //loop through items
+//@desc calculate total tax for items
+//@param items: array of items
+//@return total tax for items
+
+function calculateItemTax(item, taxRate) {
+    const totalRate = new currency(calculateTotalItemRate(item));
+    const tax = totalRate.multiply(taxRate / 100);
+    return tax.value;
+}
+
+//@desc calculate total tax
+//@param items: array of items
+//@return total tax
+
+function calculateTotalItemTax(items, taxRate) {
+    return items.reduce((total, item) => total + calculateItemTax(item, taxRate), 0);
+}
+
+//@desc calculate subtotal
+//@param items: array of items
+//@return subtotal
+
+function calculateSubtotal(items) {
+    let subtotal = new currency(0);
     items.forEach(item => {
-        subTotal = subTotal.add(item.totalRate);
+        subtotal = subtotal.add(calculateTotalItemRate(item));
     });
-    //convert to number
-    return subTotal.value;
+    return subtotal.value;
 }
 
-//@desc: calculate total
-export  function calculateTotal(subTotal, totalTax){
-    const subTotalCurrency = currency(subTotal);
-    const totalTaxCurrency = currency(totalTax);
+//@desc calculate total invoice tax
+//@param items: array of items
+//@return total invoice tax
 
-    const total = subTotalCurrency.add(totalTaxCurrency);
-    return total.value;
+function calculateInvoiceTax(items) {
+    let totalTax = new currency(0);
+    items.forEach(item => {
+        totalTax = totalTax.add(item.tax);
+    });
+    return totalTax.value;
 }
 
+//@desc calculate total invoice amount
+//@param items: array of items
+//@return total invoice amount
+
+function calculateTotalInvoiceAmount(subtotal, totalTax) {
+    const subtotalAmount = new currency(subtotal);
+    const totalTaxAmount = new currency(totalTax);
+    return subtotalAmount.add(totalTaxAmount).value;
+}
+
+
+export {
+    calculateTotalItemHours,
+    calculateTotalItemRate,
+    calculateItemTax,
+    calculateTotalItemTax,
+    calculateSubtotal,
+    calculateInvoiceTax,
+    calculateTotalInvoiceAmount}
