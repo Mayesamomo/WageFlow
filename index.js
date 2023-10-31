@@ -20,7 +20,12 @@ import errorHandler from './middleware/error.js';
 dotenv.config();
 const app = express();  //initialize express
 const PORT = process.env.PORT || 9000; //set port 
-
+const allowedOrigin = 'http://localhost:5173' //set origin
+const corsOptions = {
+    origin: allowedOrigin,
+    // methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  };
 connectDB(); //connect to database
 
 //user packages 
@@ -28,10 +33,10 @@ app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({policy: "cross-origin"}));
 app.use(morgan('common'));  
-app.use(bodyParser.json({ limit: '30mb',}));
+app.use(bodyParser.json({ limit: '500mb',}));
 app.use(bodyParser.urlencoded({ extended:true}));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors(corsOptions));
 
 //routes
 app.use('/api/auth', authRoutes);

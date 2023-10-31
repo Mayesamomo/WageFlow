@@ -83,6 +83,14 @@ function calculateTotalInvoiceAmount(subtotal, totalTax) {
     return subtotalAmount.add(totalTaxAmount).value;
 }
 
+//@desc get week number
+function getWeekNumber(date) {
+    const today = date || moment();
+    const firstDayOfYear = moment(today).startOf('year');
+    const pastDays = today.diff(firstDayOfYear, 'days');
+    return Math.ceil((pastDays + firstDayOfYear.day() + 1) / 7);
+  }
+
 
 export {
     calculateTotalItemHours,
@@ -91,4 +99,5 @@ export {
     calculateTotalItemTax,
     calculateSubtotal,
     calculateInvoiceTax,
-    calculateTotalInvoiceAmount}
+    calculateTotalInvoiceAmount,
+    getWeekNumber}

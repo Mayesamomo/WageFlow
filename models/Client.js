@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
+
 const { ObjectId } = mongoose.Schema;
+
 const ClientSchema = new mongoose.Schema({
     removed: {
         type: Boolean,
         default: false,
+    },
+    clientNumber: {
+        type: Number,
     },
     company: {
         type: String,
@@ -22,7 +27,7 @@ const ClientSchema = new mongoose.Schema({
         required: false,
         trim: true,
     },
-    tel:{
+    tel: {
         type: String,
         required: false,
         trim: true,
@@ -31,14 +36,24 @@ const ClientSchema = new mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        unique: true,   
+        unique: true,
     },
     invoices: [{
-        type:ObjectId,
+        type: ObjectId,
         ref: "Invoice",
         autopopulate: true,
     }],
-}, {timestamps: true});
+}, { timestamps: true });
+
+// Auto-increment clientNumber before saving
+ClientSchema.pre("save", async function (next) {
+    if (!this.clientNumber) {
+      // If clientNumber is not set, auto-increment it
+      const lastClient = await this.constructor.findOne({}, {}, { sort: { clientNumber: -1 } });
+      this.clientNumber = (lastClient && lastClient.clientNumber + 1) || 1;
+    }
+    next();
+  });
 
 const Client = mongoose.model("Client", ClientSchema);
 export default Client;

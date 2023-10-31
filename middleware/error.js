@@ -1,31 +1,37 @@
 import ErrorResponse from "../utils/errorResponse.js";  
 
 const errorHandler = (err, req, res, next) => {
-    let error = {...err};   
-    error.message = err.message;
-    // Log to console for dev
-    console.log(err.stack.red);
-    if(err.name === 'CastError'){
-        const message = `Resource not found with id of ${err.value}`;
-        error = new ErrorResponse(message, 404);
-    }
+    err.statusCode = err.statusCode || 500;
+  err.message = err.message || "Internal server Error";
 
-    // Mongoose duplicate value
-    if(err.code === 11000){
-        const message = `Duplicate field value entered`;
-        error = new ErrorResponse(message, 400);
-    }
+  // wrong mongodb id error
+  if (err.name === "CastError") {
+    const message = `Resources not found with this id.. Invalid ${err.path}`;
+    err = new ErrorResponse(message, 400);
+  }
 
-    // Mongoose validation error  
-    if(err.name === 'ValidationError'){
-        const message = Object.values(err.errors).map(val => '' + val.message);
-        error = new ErrorResponse(message, 400);
-    }  
-    
-    res.status(error.statusCode || 500).json({
-        success: false,
-        error: error.message || 'Server Error'
-    });
+  // Duplicate key error
+  if (err.code === 11000) {
+    const message = `Duplicate key ${Object.keys(err.keyValue)} Entered`;
+    err = new ErrorResponse(message, 400);
+  }
+
+  // wrong jwt error
+  if (err.name === "JsonWebTokenError") {
+    const message = `Your url is invalid please try again letter`;
+    err = new ErrorResponse(message, 400);
+  }
+
+  // jwt expired
+  if (err.name === "TokenExpiredError") {
+    const message = `Your Url is expired please try again letter!`;
+    err = new ErrorResponse(message, 400);
+  }
+
+  res.status(err.statusCode).json({
+    success: false,
+    message: err.message,
+  });
 };
 
 export default errorHandler;

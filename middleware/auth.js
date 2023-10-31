@@ -1,24 +1,23 @@
 import ErrorResponse from "../utils/errorResponse.js";  
 import jwt from 'jsonwebtoken'; 
 import User from '../models/User.js';   
-
+import catchAsyncErrors from "./catchAsyncErrors.js";
 
 //check if user is authenticated    
+const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
+    const { token } = req.cookies;
 
-async function isAuthenticated(req, res, next){
-    const {token} = req.cookies;
-    //make sure token exists
-    if(!token){
-        return next(new ErrorResponse('UnAuthorized action', 401));
+    if (!token) {
+        return next(new ErrorResponse("Please login to continue", 401));
     }
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id);
-        next();
-    }catch(err){
-        return next(new ErrorResponse('UnAuthorized action', 401));
-    }
- }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+    req.user = await User.findById(decoded.id);
+
+    next();
+});
+
 
  //admin access middleware
 

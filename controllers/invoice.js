@@ -1,7 +1,7 @@
 import Invoice from "../models/Invoice.js";
 import invoiceValidationSchema from "../helper/invoiceValidate.js";
 import Client from "../models/Client.js";
-
+import { getWeekNumber} from "../helper/calculation.js";
 //@desc: create invoice
 //@route: POST /api/invoice
 //@access: private
@@ -187,4 +187,92 @@ async function getClientInvoices(req, res) {
             }
         }
 
-export { createInvoice, getInvoices, getClientInvoices,getInvoice, updateInvoice, deleteInvoice};
+     
+//@desc Get the most recent 5 invoices
+//@route GET /api/invoices/recent
+//@access private
+async function getRecentInvoices(req, res) {
+    try {
+        const recentInvoices = await Invoice.find({ removed: false })
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        res.status(200).json({
+            success: true,
+            message: "Recent invoices retrieved successfully",
+            data: recentInvoices,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+    }
+}
+//@desc get total weekly earnings for each month
+//@route GET /api/invoice/earnings
+//@access private
+async function getWeeklyEarnings(req, res) {
+    try {
+        const invoices = await Invoice.find({ removed: false });
+        const earnings = invoices.reduce((acc, invoice) => {
+            const date = new Date(invoice.createdAt);
+            const week = getWeekNumber(date);
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const key = `${month}-${year}-${week}`;
+            if (!acc[key]) {
+                acc[key] = 0;
+            }
+            acc[key] += invoice.totalAmount;
+            return acc;
+        }, {});
+        res.status(200).json({
+            success: true,
+            message: "Weekly earnings retrieved successfully",
+            data: earnings,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+    }
+}
+
+//@desc all total earnings for current month
+//@route GET /api/invoice/monthlyEarnings
+//@access private
+async function getMonthlyEarnings(req, res) {
+    try {
+        const invoices = await Invoice.find({ removed: false });
+        const earnings = invoices.reduce((acc, invoice) => {
+            const date = new Date(invoice.createdAt);
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const key = `${month}-${year}`;
+            if (!acc[key]) {
+                acc[key] = 0;
+            }
+            acc[key] += Math.round(invoice.totalAmount);
+            return acc;
+        }, {});
+        res.status(200).json({
+            success: true,
+            message: "Monthly earnings retrieved successfully",
+            data: earnings,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            success: false,
+            message: "Server error",
+        });
+    }
+}
+
+
+export { createInvoice, getInvoices, getClientInvoices, getInvoice, updateInvoice, deleteInvoice, getRecentInvoices, getWeeklyEarnings, getMonthlyEarnings };
+

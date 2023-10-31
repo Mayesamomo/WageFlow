@@ -13,7 +13,8 @@ router.post('/logout', logout);
 router.get('/profile', isAuthenticated, getProfile);
 
 //@desc user routes
-//@route PUT /api/profile
+//@route PUT /api/profileclear
+
 //@access Private
 router.put('/profile', isAuthenticated, editUserProfile);
 

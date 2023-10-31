@@ -7,7 +7,7 @@ import clientSchema from "../helper/clientValidate.js";
 
 async function getClients(req, res) {
     try {
-        const clients = await Client.find({ removed: false }).sort({ createdAt: -1 });
+        const clients = await Client.find({ removed: false }).sort({clientNumber: 1 });
 
         //if no clients found
         if (!clients || clients.length === 0) {
@@ -220,10 +220,26 @@ async function searchClients(req, res) {
     }
 }
 
-// @desc    Get all client's invoices
-// @route   GET /api/clients/:id/invoices
-// @access  Private
+//@desc get total clients
+//@route GET /api/clients/total
+//@access Private
+
+async function getTotalClients(req, res) {
+    try {
+        const totalClients = await Client.EstimatedDocumentCount()({ removed: false });
+        res.status(200).json({
+            success: true,
+            message: "total clients fetched successfully",
+            data: totalClients.toString(),
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
 
 
 
-export { getClients, getClient, createClient, updateClient, deleteClient, searchClients };
+export { getClients, getClient, createClient, updateClient, deleteClient, getTotalClients };

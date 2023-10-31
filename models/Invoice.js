@@ -4,7 +4,6 @@ import {
     calculateTotalItemHours,
     calculateTotalItemRate,
     calculateItemTax,
-    calculateTotalItemTax,
     calculateSubtotal,
     calculateInvoiceTax,
     calculateTotalInvoiceAmount
@@ -104,6 +103,16 @@ const InvoiceSchema = new mongoose.Schema(
             type: String,
             trim: true,
             required: false,
+        },
+        pdfUrl: {
+            public_id: {
+                type: String,
+                required: false,
+              },
+              url: {
+                type: String,
+                required: false,
+              },
         },
         subTotal: {
             type: Number,
