@@ -26,6 +26,9 @@ const InvoiceSchema = new mongoose.Schema(
             default: "pending",
             enum: ["pending", "paid", "canceled"],
         },
+        invoiceNumber: {
+            type: Number,
+        },
         client: {
             type: ObjectId,
             ref: "Client",
@@ -151,6 +154,16 @@ const InvoiceSchema = new mongoose.Schema(
         this.totalAmount = calculateTotalInvoiceAmount(this.subTotal, this.totalTax);
         next();
     })
+
+    // Auto-increment invoiceNumber before saving
+    InvoiceSchema.pre("save", async function (next) {
+        if (!this.invoiceNumber) {
+          // If invoiceNumber is not set, auto-increment it
+          const lastInvoice = await this.constructor.findOne({}, {}, { sort: { invoiceNumber: -1 } });
+          this.invoiceNumber = (lastInvoice && lastInvoice.invoiceNumber + 1) || 1;
+        }
+        next();
+      });
 InvoiceSchema.plugin(autopopulate);
 const Invoice = mongoose.model("Invoice", InvoiceSchema);
 export default Invoice;
