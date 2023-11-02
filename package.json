@@ -17,6 +17,10 @@
   "bugs": {
     "url": "https://github.com/Mayesamomo/WageFlow/issues"
   },
+
+  "engines": {
+    "node": ">=16.13.2"
+  },
   "homepage": "https://github.com/Mayesamomo/WageFlow#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -38,4 +42,5 @@
     "validator": "^13.11.0",
     "yup": "^1.3.2"
   }
+  
 }
