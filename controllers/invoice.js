@@ -1,7 +1,7 @@
 import Invoice from "../models/Invoice.js";
 import invoiceValidationSchema from "../helper/invoiceValidate.js";
 import Client from "../models/Client.js";
-import { getWeekNumber} from "../helper/calculation.js";
+import { getWeekNumber } from "../helper/calculation.js";
 //@desc: create invoice
 //@route: POST /api/invoice
 //@access: private
@@ -57,7 +57,7 @@ async function getInvoices(req, res) {
         console.log(invoices);
         return res.status(200).json({
             success: true,
-            message: "invoices fetched successfully",   
+            message: "invoices fetched successfully",
             data: invoices,
         });
     } catch (error) {
@@ -70,7 +70,7 @@ async function getInvoices(req, res) {
 
 //@desc get one client's invoices
 
-async function getClientInvoices(req, res) { 
+async function getClientInvoices(req, res) {
     try {
         const { id } = req.params;
         const client = await Client.findById(id);
@@ -83,7 +83,7 @@ async function getClientInvoices(req, res) {
 
         //retrieve client invoices with client id 
         const invoices = await Invoice.find({ client: id, removed: false }).sort({ createdAt: -1 });
-        const clientInvoices ={
+        const clientInvoices = {
             id: client._id,
             invoices: invoices,
         }
@@ -99,95 +99,95 @@ async function getClientInvoices(req, res) {
             message: error.message,
         });
     }
- }
+}
 
 
- //@desc get one invoice
-    //@route GET /api/invoice/:id
-    //@access private
+//@desc get one invoice
+//@route GET /api/invoice/:id
+//@access private
 
-    async function getInvoice(req, res) {
-        try {
-            const { id } = req.params;	
-            const invoice = await Invoice.findById(id).populate('client');
-
-            if (!invoice || invoice.removed) {
-               res.status(404).json({
-                    success: false,
-                    message: "invoice not found",
-
-               });
-            }
-            res.status(200).json({
-                success: true,
-                message: "invoice fetched successfully",
-                data: invoice,
-            });
-        } catch (error) {
-            
-        }
-    }
-
-
-    //@desc update invoice
-    //@route PUT /api/invoice/:id
-    //@access private
-    async function updateInvoice(req, res) {  
+async function getInvoice(req, res) {
+    try {
         const { id } = req.params;
-        try {
-            const invoice = await Invoice.findById(id);
-            if (!invoice || invoice.removed) {
-                return next(new ErrorResponse("invoice not found", 404));
-            }
-            const updatedInvoice = await Invoice.findByIdAndUpdate(id, req.body, {
-                new: true,
-                runValidators: true,
-            });
-            res.status(200).json({
-                success: true,
-                message: "invoice updated successfully",
-                data: updatedInvoice,
-            });
-        } catch (error) {
-            res.status(500).json({
+        const invoice = await Invoice.findById(id).populate('client');
+
+        if (!invoice || invoice.removed) {
+            res.status(404).json({
                 success: false,
-                message: error.message,
+                message: "invoice not found",
+
             });
         }
-     }
+        res.status(200).json({
+            success: true,
+            message: "invoice fetched successfully",
+            data: invoice,
+        });
+    } catch (error) {
 
-     //@desc delete invoice
-        //@route DELETE /api/invoice/:id
-        //@access private
+    }
+}
 
-        async function deleteInvoice(req, res) {
-            try {
-                const { id } = req.params;
-                const invoiceId = await Invoice.findById(id);
-                if (!invoiceId || invoiceId.removed) {
-                    return res.status(404).json({
-                        success: false,
-                        message: "invoice not found",
-                    });
-                }
-                const deletedInvoice = await Invoice.findByIdAndUpdate(
-                    id,
-                    { removed: true },
-                    { new: true }
-                );
 
-                deletedInvoice.save();
-                res.status(200).json({
-                    success: true,
-                    message: "invoice deleted successfully",
-                    data: deletedInvoice,
-                });
-            } catch (error) {
-                
-            }
+//@desc update invoice
+//@route PUT /api/invoice/:id
+//@access private
+async function updateInvoice(req, res) {
+    const { id } = req.params;
+    try {
+        const invoice = await Invoice.findById(id);
+        if (!invoice || invoice.removed) {
+            return next(new ErrorResponse("invoice not found", 404));
         }
+        const updatedInvoice = await Invoice.findByIdAndUpdate(id, req.body, {
+            new: true,
+            runValidators: true,
+        });
+        res.status(200).json({
+            success: true,
+            message: "invoice updated successfully",
+            data: updatedInvoice,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
 
-     
+//@desc delete invoice
+//@route DELETE /api/invoice/:id
+//@access private
+
+async function deleteInvoice(req, res) {
+    try {
+        const { id } = req.params;
+        const invoiceId = await Invoice.findById(id);
+        if (!invoiceId || invoiceId.removed) {
+            return res.status(404).json({
+                success: false,
+                message: "invoice not found",
+            });
+        }
+        const deletedInvoice = await Invoice.findByIdAndUpdate(
+            id,
+            { removed: true },
+            { new: true }
+        );
+
+        deletedInvoice.save();
+        res.status(200).json({
+            success: true,
+            message: "invoice deleted successfully",
+            data: deletedInvoice,
+        });
+    } catch (error) {
+
+    }
+}
+
+
 //@desc Get the most recent 5 invoices
 //@route GET /api/invoices/recent
 //@access private
@@ -273,6 +273,52 @@ async function getMonthlyEarnings(req, res) {
     }
 }
 
+//@desc get invoice by user
+//@route GET /api/invoice/searchQuery
+//@access private
 
-export { createInvoice, getInvoices, getClientInvoices, getInvoice, updateInvoice, deleteInvoice, getRecentInvoices, getWeeklyEarnings, getMonthlyEarnings };
+async function getInvoiceByUser(req, res) {
+    const { searchQuery } = req.query;
+    try {
+        const invoices = await Invoice.find({ removed: false }, { creator: searchQuery });
+        res.status(200).json({
+            success: true,
+            message: "invoices fetched successfully",
+            data: invoices,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
+//@desc total invoices
+//@route GET /api/invoice/total
+//@access private
+
+async function getTotalInvoices(req, res) {
+    const { searchQuery } = req.query;
+    try{
+        const totalCount = await Invoice.countDocuments({ removed: false }, { creator: searchQuery });
+        res.status(200).json({
+            success: true,
+            message: "invoices fetched successfully",
+            data: totalCount,
+        });
+    }catch(error){
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+}
+
+export { createInvoice, getInvoices, 
+    getClientInvoices, getInvoice, 
+    updateInvoice, deleteInvoice,
+     getRecentInvoices, getWeeklyEarnings,
+      getMonthlyEarnings,getInvoiceByUser,
+      getTotalInvoices };
 

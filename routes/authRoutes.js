@@ -1,7 +1,7 @@
 import express from 'express';
 const router = express.Router();
 import {register, login, logout, getProfile} from '../controllers/auth.js';
-import { editUserProfile } from '../controllers/user.js';
+import { updateUserProfile } from '../controllers/user.js';
 import {isAuthenticated} from '../middleware/auth.js';
 
 //@desc auth routes 
@@ -16,7 +16,7 @@ router.get('/profile', isAuthenticated, getProfile);
 //@route PUT /api/profileclear
 
 //@access Private
-router.put('/profile', isAuthenticated, editUserProfile);
+router.put('/profile', isAuthenticated, updateUserProfile);
 
 
 export default router;

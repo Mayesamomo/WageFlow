@@ -2,6 +2,8 @@ import User from '../models/User.js';
 import { registerValidate, loginValidate} from "../helper/authValidate.js"
 import Profile from "../models/Profile.js";
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+
 import ErrorResponse from "../utils/errorResponse.js";
 import catchAsyncErrors from '../middleware/catchAsyncErrors.js';
 import sendToken from "../utils/jwtToken.js";
@@ -114,4 +116,73 @@ async function getProfile(req, res, next) {
     });
 }
 
-export { register, login, logout, getProfile };
+async function forgotPassword(req, res, next) {
+    const { email } = req.body
+  
+    // NODEMAILER TRANSPORT FOR SENDING POST NOTIFICATION VIA EMAIL
+     const transporter = nodemailer.createTransport({
+         host: HOST,
+         port : PORT,
+         auth: {
+         user: USER,
+         pass: PASS
+         },
+         tls:{
+             rejectUnauthorized:false
+         }
+     })
+
+
+ crypto.randomBytes(32,(err,buffer)=>{
+     if(err){
+         console.log(err)
+     }
+     const token = buffer.toString("hex")
+     User.findOne({email : email})
+     .then(user=>{
+         if(!user){
+             return res.status(422).json({error:"User does not exist in our database"})
+         }
+         user.resetToken = token
+         user.expireToken = Date.now() + 3600000
+         user.save().then((result)=>{
+             transporter.sendMail({
+                 to:user.email,
+                 from:"WageFlow <noreply@wageflow.vercel.app>",
+                 subject:"Password reset request",
+                 html:`
+                 <p>You requested for password reset from Arc Invoicing application</p>
+                 <h5>Please click this <a href="https://wageflow.vercel.app/reset/${token}">link</a> to reset your password</h5>
+                 <p>Link not clickable?, copy and paste the following url in your address bar.</p>
+                 <p>https://wageflow.vercel.app/reset/${token}</p>
+                 <P>If this was a mistake, Please ignore the email.</P>
+                 `
+             })
+             res.json({message:"Password reset link sent, please check your email"})
+         }).catch((err) => console.log(err))
+
+     })
+ })
+}
+//@reset password
+async function resetPassword(req, res, next) {
+    const newPassword = req.body.password
+    const sentToken = req.body.token
+    User.findOne({resetToken:sentToken,expireToken:{$gt:Date.now()}})
+    .then(user=>{
+        if(!user){
+            return res.status(422).json({error:"Try again session expired"})
+        }
+        bcrypt.hash(newPassword,12).then(hashedpassword=>{
+           user.password = hashedpassword
+           user.resetToken = undefined
+           user.expireToken = undefined
+           user.save().then((saveduser)=>{
+               res.json({message:"password updated success"})
+           })
+        })
+    }).catch(err=>{
+        console.log(err)
+    })
+}
+export { register, login, logout, getProfile,forgotPassword,resetPassword, };

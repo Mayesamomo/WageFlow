@@ -24,7 +24,7 @@ const InvoiceSchema = new mongoose.Schema(
             required: true,
             trim: true,
             default: "pending",
-            enum: ["pending", "paid", "canceled"],
+            enum: ["pending", "paid", "unpaid"],
         },
         invoiceNumber: {
             type: Number,
@@ -117,6 +117,7 @@ const InvoiceSchema = new mongoose.Schema(
                 required: false,
               },
         },
+        creator: [String],
         subTotal: {
             type: Number,
             required: true,

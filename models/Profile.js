@@ -10,20 +10,10 @@ const ProfileSchema = mongoose.Schema({
     phoneNumber: String,
     businessName: String,
     contactAddress: String,
-    paymentDetails: String,
     logo: String,
     website: String,
     userId: [String],
-    avatar: {
-        public_id: {
-            type: String,
-            required: false,
-        },
-        url: {
-            type: String,
-            required: false,
-        },
-    },
+    
 })
 
 const Profile = mongoose.model('Profile', ProfileSchema)

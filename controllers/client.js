@@ -241,5 +241,21 @@ async function getTotalClients(req, res) {
 }
 
 
+//@desc get client by user
+//@route GET /api/clients/searchQuery?
+//@access Private
+
+async function getClientByUser(req, res) {
+    const { searchQuery } = req.query;
+    try {
+        const clients = await Client.find({ userId: searchQuery });
+        res.status(200).json({ data: clients });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+}
+
+
+
 
 export { getClients, getClient, createClient, updateClient, deleteClient, getTotalClients };
