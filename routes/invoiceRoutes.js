@@ -1,4 +1,5 @@
 import express from 'express';
+import { isAuthenticated, isAdmin } from '../middleware/auth.js';
 const router = express.Router();
 import {
   createInvoice,
@@ -23,7 +24,7 @@ router.get('/:id', getInvoice);
 router.put('/:id', updateInvoice);
 router.delete('/:id', deleteInvoice);
 router.get('/earnings', getWeeklyEarnings);
-router.get('/earnings/monthly', getMonthlyEarnings);
-router.get('/count', getTotalInvoices);
+router.get('/earnings/monthly',isAuthenticated, getMonthlyEarnings);
+router.get('/count',isAuthenticated, getTotalInvoices);
 
 export default router;

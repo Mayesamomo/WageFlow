@@ -4,19 +4,42 @@ import User from '../models/User.js';
 import catchAsyncErrors from "./catchAsyncErrors.js";
 
 //check if user is authenticated    
-const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
-    const { token } = req.cookies;
+// const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
+//     const { token } = req.cookies;
 
-    if (!token) {
-        return next(new ErrorResponse("Please login to continue", 401));
+//     if (!token) {
+//         return next(new ErrorResponse("Please login to continue", 401));
+//     }
+
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+
+//     req.user = await User.findById(decoded.id);
+
+//     next();
+// });
+
+const isAuthenticated = async (req, res, next) => {
+    try {
+        const token = req.cookies.token || req.headers.authorization;
+
+        if(!token){
+            return next(new ErrorResponse('Unauthorized access. Please log in.', 401));
+        }
+        //verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        //find the user based on decoded user Id
+        const user = await User.findById(decoded._id);
+
+        if(!user){
+            return next(new ErrorResponse('User not found', 404));
+        }
+        req.user =user;
+        next() //proceed to the protected route
+    } catch (error) {
+        return next(new ErrorResponse('Unauthorized access. Please log in.', 401));
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
-    req.user = await User.findById(decoded.id);
-
-    next();
-});
+ }
 
 
  //admin access middleware
